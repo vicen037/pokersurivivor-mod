@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "PokéSurvivor Ultimate Suite",
+  "version": "3.5",
+  "description": "Suite avanzada de modificación, control de tiempo y fusiones para PokéSurvivor",
+  "content_scripts": [
+    {
+      "matches": [
+        "*://pokesurvivor.com/*",
+        "*://*.pokesurvivor.com/*"
+      ],
+      "js": [
+        "state.js",
+        "time.js",
+        "engine.js",
+        "moves.js",
+        "save.js",
+        "ui.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}
