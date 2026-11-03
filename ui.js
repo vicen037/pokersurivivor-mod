@@ -600,6 +600,20 @@
             renderItemsCatalog();
             populateDatalist();
           }
+          if (btn.getAttribute("data-tab") === "tab-prog") {
+            const active = window._psSave?.getActiveSave();
+            if (active && active.save) {
+              const inCoins = document.getElementById("ps-in-coins");
+              const inT1 = document.getElementById("ps-in-t1");
+              const inT10 = document.getElementById("ps-in-t10");
+              const inCandies = document.getElementById("ps-in-candies");
+              if (inCoins && active.save.coins !== undefined) inCoins.value = active.save.coins;
+              if (inT1 && active.save.tickets?.t1 !== undefined) inT1.value = active.save.tickets.t1;
+              if (inT10 && active.save.tickets?.t10 !== undefined) inT10.value = active.save.tickets.t10;
+              const candyVal = (active.save.bag && active.save.bag.candy !== undefined) ? active.save.bag.candy : active.save.candy;
+              if (inCandies && candyVal !== undefined) inCandies.value = candyVal;
+            }
+          }
         }
       });
     });
@@ -1090,21 +1104,17 @@
 
     // Guardar Recursos
     document.getElementById("ps-btn-save-coins").addEventListener("click", () => {
-      const ctx = window._psSave.getSaveContext();
-      if (!ctx) return showToast("Error: No se encontró partida.");
-      const save = JSON.parse(localStorage.getItem(ctx.saveKey));
-      save.coins = parseInt(document.getElementById("ps-in-coins").value, 10);
-      if (!save.tickets) save.tickets = {};
-      save.tickets.t1 = parseInt(document.getElementById("ps-in-t1").value, 10);
-      save.tickets.t10 = parseInt(document.getElementById("ps-in-t10").value, 10);
+      const coins = document.getElementById("ps-in-coins")?.value;
+      const t1 = document.getElementById("ps-in-t1")?.value;
+      const t10 = document.getElementById("ps-in-t10")?.value;
+      const candies = document.getElementById("ps-in-candies")?.value;
 
-      // Inyección de Caramelos de Halloween
-      const candies = parseInt(document.getElementById("ps-in-candies").value, 10) || 0;
-      save.bag = save.bag || {};
-      save.bag.candy = candies;
-      save.candy = candies;
-
-      window._psSave.commitSave(save, ctx.uid, ctx.saveKey);
+      const res = window._psSave.injectCurrencies(coins, t1, t10, candies);
+      if (res.ok) {
+        showToast("💰 Recursos inyectados y guardados con éxito.");
+      } else {
+        showToast("⚠️ Inicia sesión o entra como Invitado en el juego primero.");
+      }
     });
 
     win.querySelectorAll(".ps-btn-quick-candy").forEach(b => {
@@ -1118,61 +1128,47 @@
     document.getElementById("ps-btn-run-candy")?.addEventListener("click", () => {
       const ok = window._psSave.addCandiesToRun(1000);
       if (ok) {
-        showToast("🍬 +1,000 Caramelos inyectados a tu partida en vivo.");
+        showToast("🍬 +1,000 Caramelos inyectados a tu partida.");
       } else {
-        showToast("Entra en partida para añadir caramelos en vivo.");
+        showToast("⚠️ Inicia sesión o entra como Invitado en el juego primero.");
       }
     });
 
     // Desbloqueos Masivos
-    const getDexList = () => {
-      const ns = window._psGameNS;
-      if (ns && ns.DEX) return Object.keys(ns.DEX);
-      if (ns && ns.DEX_BY) return Object.keys(ns.DEX_BY);
-      return Array.from({ length: 1025 }, (_, i) => (i + 1).toString());
-    };
-
     document.getElementById("ps-btn-unlock-all").addEventListener("click", () => {
-      const ctx = window._psSave.getSaveContext();
-      if (!ctx) return showToast("Error: No se encontró partida.");
-      const save = JSON.parse(localStorage.getItem(ctx.saveKey));
-      if (!save.owned) save.owned = {};
-      getDexList().forEach(id => {
-        if (!save.owned[id]) save.owned[id] = { at: Date.now(), runs: 1, kills: 150 };
-      });
-      window._psSave.commitSave(save, ctx.uid, ctx.saveKey);
+      const res = window._psSave.unlockAllPokemon();
+      if (res.ok) {
+        showToast(`📖 ¡Toda la Pokédex desbloqueada (${res.count} Pokémon)!`);
+      } else {
+        showToast("⚠️ Inicia sesión o entra como Invitado en el juego primero.");
+      }
     });
 
     document.getElementById("ps-btn-unlock-shiny").addEventListener("click", () => {
-      const ctx = window._psSave.getSaveContext();
-      if (!ctx) return showToast("Error: No se encontró partida.");
-      const save = JSON.parse(localStorage.getItem(ctx.saveKey));
-      if (!save.shiny) save.shiny = {};
-      getDexList().forEach(id => {
-        save.shiny[id] = { at: Date.now() };
-      });
-      window._psSave.commitSave(save, ctx.uid, ctx.saveKey);
+      const res = window._psSave.unlockAllShinies();
+      if (res.ok) {
+        showToast(`✨ ¡Todos los Shinies desbloqueados (${res.count} Pokémon)!`);
+      } else {
+        showToast("⚠️ Inicia sesión o entra como Invitado en el juego primero.");
+      }
     });
 
     document.getElementById("ps-btn-max-all").addEventListener("click", () => {
-      const ctx = window._psSave.getSaveContext();
-      if (!ctx) return showToast("Error: No se encontró partida.");
-      const save = JSON.parse(localStorage.getItem(ctx.saveKey));
-      if (!save.pupg) save.pupg = {};
-      Object.keys(save.owned || {}).forEach(id => {
-        save.pupg[id] = { hp: 10, atk: 10, spd: 10, crit: 10, pickup: 10, exp: 10 };
-      });
-      window._psSave.commitSave(save, ctx.uid, ctx.saveKey);
+      const res = window._psSave.maxAllStats();
+      if (res.ok) {
+        showToast("⭐ ¡Todos los stats de Pokémon maxeados al nivel 10!");
+      } else {
+        showToast("⚠️ Inicia sesión o entra como Invitado en el juego primero.");
+      }
     });
 
     document.getElementById("ps-btn-unlock-arenas").addEventListener("click", () => {
-      const ctx = window._psSave.getSaveContext();
-      if (!ctx) return showToast("Error: No se encontró partida.");
-      const save = JSON.parse(localStorage.getItem(ctx.saveKey));
-      const biomes = ["fire", "ghost", "flying", "steel", "ice", "electric", "poison", "ground", "rock", "bug", "dragon", "dark", "water", "grass", "psychic", "fairy", "fighting", "normal"];
-      if (!save.arenas) save.arenas = {};
-      biomes.forEach(b => { save.arenas[b] = Date.now(); });
-      window._psSave.commitSave(save, ctx.uid, ctx.saveKey);
+      const res = window._psSave.unlockAllArenas();
+      if (res.ok) {
+        showToast("🌋 ¡Todas las 18 Arenas y Biomas desbloqueados!");
+      } else {
+        showToast("⚠️ Inicia sesión o entra como Invitado en el juego primero.");
+      }
     });
 
     document.getElementById("ps-btn-unlock-skins")?.addEventListener("click", () => {
@@ -1180,7 +1176,7 @@
       if (ok) {
         showToast("🧙‍♀️ ¡Todas las skins de Halloween desbloqueadas y equipadas!");
       } else {
-        showToast("Error: No se encontró partida.");
+        showToast("⚠️ Inicia sesión o entra como Invitado en el juego primero.");
       }
     });
 

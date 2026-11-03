@@ -104,3 +104,4 @@ O pulsar en **Code > Download ZIP** en GitHub y descomprimir el archivo en una c
 
 * Esta herramienta está diseñada para partidas individuales, pruebas y disfrute personal.
 * Si el juego lanza un parche que modifique la estructura interna, mantén actualizada la extensión recargándola desde `chrome://extensions`.
+
