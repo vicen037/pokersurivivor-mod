@@ -51,7 +51,7 @@ La extensión funciona en cualquier navegador basado en **Chromium** (Google Chr
 ### 1. Descargar el repositorio
 Puedes clonar el repositorio mediante Git:
 ```bash
-git clone https://github.com/TU_USUARIO/pokersurivivor-mod.git
+git clone https://github.com/vicen037/pokersurivivor-mod.git
 ```
 O pulsar en **Code > Download ZIP** en GitHub y descomprimir el archivo en una carpeta de tu ordenador.
 
